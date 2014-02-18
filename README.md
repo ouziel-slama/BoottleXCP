@@ -17,7 +17,7 @@ You can find MacOS build here: https://github.com/JahPowerBit/counterpartyws_bui
 brew update
 brew install sqlite
 
-pip3 install appdirs==1.2.0 prettytable==0.7.2 python-dateutil==2.2 requests==2.1.0 cherrypy==3.2.4 json-rpc==1.1 pycoin==0.25 pytest==2.5.1
+pip3 install bottle appdirs==1.2.0 prettytable==0.7.2 python-dateutil==2.2 requests==2.1.0 cherrypy==3.2.4 json-rpc==1.1 pycoin==0.25 pytest==2.5.1
 pip3 install https://github.com/rogerbinns/apsw/archive/master.zip
 
 git clone --recursive https://github.com/JahPowerBit/counterpartyws.git
