@@ -10,7 +10,7 @@ A simple webserver + HTML GUI for Counterparty
 
 # Quick install and run (thanks to romerun)
 
-<code>
+<code><pre>
 
 brew update
 brew install sqlite
@@ -32,7 +32,7 @@ screen -S counterpartyws
 ./counterpartyws
 ctrl + a + d
 
-</code>
+</pre></code>
 
 Open you browser: http://localhost:8080
 
@@ -43,7 +43,7 @@ Open you browser: http://localhost:8080
 (Vista, 7) C:\Users\username\AppData\Roaming\counterpartyd\counterpartyd.conf
 (Linux) ~/.config/counterpartyd/counterpartyd.conf
 
-<code>
+<code><pre>
 [Default]
 bitcoind-rpc-connect=192.168.2.254
 bitcoind-rpc-port=8332
@@ -55,4 +55,4 @@ gui-host=localhost
 gui-port=8080
 gui-user=xxxxx
 gui-password=xxxxx
-</code>
+</pre></code>
