@@ -1,0 +1,6 @@
+[submodule "counterpartygui"]
+	path = counterpartygui
+	url = https://github.com/JahPowerBit/counterpartygui
+[submodule "counterpartyd"]
+	path = counterpartyd
+	url = https://github.com/PhantomPhreak/counterpartyd.git
