@@ -3,15 +3,16 @@ counterpartyws
 
 A simple webserver + HTML GUI for Counterparty
 
-# Requirement (if you want the transactions database is updated continuously)
+You can find MacOS build here: https://github.com/JahPowerBit/counterpartyws_build
 
+# Requirement
+<b>(if you want the transactions database is updated continuously)</b>
 * you must have bitcoind running with txindex=1 and server=1 in config file. 
 * you must have counterpatyd --server running
 
-# Quick install and run (thanks to romerun)
-
-<code><pre>
-
+# Quick install and run 
+<b>(thanks to romerun)</b>
+<pre>
 brew update
 brew install sqlite
 
@@ -31,19 +32,21 @@ cd counterpartyws
 screen -S counterpartyws
 ./counterpartyws
 ctrl + a + d
-
-</pre></code>
+</pre>
 
 Open you browser: http://localhost:8080
 
 # Configuration file
 
-(MacOS) ~/Library/Application Support/counterpartyd/counterpartyd.conf
-(XP) C:\Documents and Settings\username\Application Data\counterpartyd\counterpartyd.conf
-(Vista, 7) C:\Users\username\AppData\Roaming\counterpartyd\counterpartyd.conf
-(Linux) ~/.config/counterpartyd/counterpartyd.conf
 
-<code><pre>
+OS  | Path
+------------- | -------------
+MacOS | ~/Library/Application Support/counterpartyd/counterpartyd.conf
+XP | C:\Documents and Settings\username\Application Data\counterpartyd\counterpartyd.conf
+Vista, 7 | C:\Users\username\AppData\Roaming\counterpartyd\counterpartyd.conf
+Linux | ~/.config/counterpartyd/counterpartyd.conf
+
+<pre>
 [Default]
 bitcoind-rpc-connect=192.168.2.254
 bitcoind-rpc-port=8332
@@ -55,4 +58,4 @@ gui-host=localhost
 gui-port=8080
 gui-user=xxxxx
 gui-password=xxxxx
-</pre></code>
+</pre>
