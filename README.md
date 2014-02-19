@@ -6,9 +6,9 @@ A simple webserver + HTML GUI for Counterparty
 You can find MacOS build here: https://github.com/JahPowerBit/counterpartyws_build
 
 # Requirement
-<b>(if you want the transactions database is updated continuously)</b>
+
 * you must have bitcoind running with txindex=1 and server=1 in config file. 
-* you must have counterpatyd --server running
+* you must have counterpatyd --server running (if you want the transactions database is updated continuously)
 
 # Quick install and run 
 <b>(thanks to romerun)</b>
