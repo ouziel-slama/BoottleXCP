@@ -22,7 +22,12 @@ pip3 install https://github.com/rogerbinns/apsw/archive/master.zip
 
 git clone --recursive https://github.com/JahPowerBit/counterpartyws.git
 
-cd counterpartyws/counterpartyd
+cd counterpartyws/counterpartygui
+bower install
+
+cd ..
+
+cd counterpartyd
 screen -S counterpartyd
 ./counterpartyd server
 ctrl + a + d
