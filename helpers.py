@@ -4,7 +4,8 @@ import json
 import configparser
 import appdirs
 import decimal
-from counterpartyd.lib import config
+import apsw
+from counterpartyd.lib import config, util
 
 D = decimal.Decimal
 
@@ -214,9 +215,19 @@ def set_options (data_dir=None, bitcoind_rpc_connect=None, bitcoind_rpc_port=Non
     config.GUI_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'counterpartygui')
 
 
+def connect_to_db(timeout=1000):
+    """Connects to the SQLite database, returning a db Connection object"""
+    db = apsw.Connection(config.DATABASE)
+    cursor = db.cursor()
+    cursor.execute('''PRAGMA count_changes = OFF''')
+    cursor.close()
+    db.setrowtrace(util.rowtracer)
+    db.setexectrace(util.exectracer)
+    db.setbusytimeout(timeout)
+    return db
+
 def init_logging():
-    #db2 = util.connect_to_db()
-    # Logging (to file and console).
+
     logger = logging.getLogger() #get root logger
     logger.setLevel(logging.INFO)
     #Console logging
@@ -225,13 +236,6 @@ def init_logging():
     formatter = logging.Formatter('%(message)s')
     console.setFormatter(formatter)
     logger.addHandler(console)
-    #File logging (rotated)
-    max_log_size = 2 * 1024 * 1024 #max log size of 2 MB before rotation (make configurable later)
-    fileh = logging.handlers.RotatingFileHandler(config.LOG, maxBytes=max_log_size, backupCount=5)
-    fileh.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s %(message)s', '%Y-%m-%d-T%H:%M:%S%z')
-    fileh.setFormatter(formatter)
-    logger.addHandler(fileh)
 
 
 def check_auth(user, passwd):

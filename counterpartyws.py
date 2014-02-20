@@ -7,19 +7,21 @@ import decimal
 import time
 import json
 import logging
-
+import bottle
 from bottle import route, run, template, Bottle, request, static_file, redirect, error, hook, response, abort, auth_basic
 
 from counterpartyd.lib import (config, api, util, exceptions, bitcoin, blocks)
 from counterpartyd.lib import (send, order, btcpay, issuance, broadcast, bet, dividend, burn, cancel, callback)
 
-from helpers import set_options, init_logging, check_auth, D, S, DecimalEncoder
+from helpers import set_options, init_logging, check_auth, D, S, DecimalEncoder, connect_to_db
+
+from wsgiref import simple_server
 
 
 set_options()
 init_logging()
 app = Bottle()
-db = util.connect_to_db()
+db = connect_to_db(10000)
 
 @app.route('/<filename:path>')
 @auth_basic(check_auth)
@@ -195,6 +197,7 @@ def run_server():
 
 
 if __name__ == '__main__':
+    print("run server")
     run_server()
 
 
