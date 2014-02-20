@@ -13,14 +13,12 @@ from bottle import route, run, template, Bottle, request, static_file, redirect,
 from counterpartyd.lib import (config, api, util, exceptions, bitcoin, blocks)
 from counterpartyd.lib import (send, order, btcpay, issuance, broadcast, bet, dividend, burn, cancel, callback)
 
-from helpers import set_options, init_logging, check_auth, D, S, DecimalEncoder, connect_to_db
-
-from wsgiref import simple_server
+from helpers import set_options, init_logging, D, S, DecimalEncoder, connect_to_db, check_auth
 
 
+app = Bottle()
 set_options()
 init_logging()
-app = Bottle()
 db = connect_to_db(10000)
 
 @app.route('/<filename:path>')
@@ -193,11 +191,14 @@ def counterparty_action():
 
 
 def run_server():
+    print('_', config.GUI_USER, '_', config.GUI_PASSWORD, '_')
     app.run(port=config.GUI_PORT, host=config.GUI_HOST, reloader=False)
 
 
 if __name__ == '__main__':
     print("run server")
+    
+
     run_server()
 
 

@@ -9,6 +9,7 @@ from counterpartyd.lib import config, util
 
 D = decimal.Decimal
 
+
 def set_options (data_dir=None, bitcoind_rpc_connect=None, bitcoind_rpc_port=None,
                  bitcoind_rpc_user=None, bitcoind_rpc_password=None, rpc_host=None, rpc_port=None,
                  rpc_user=None, rpc_password=None, log_file=None, database_file=None, testnet=False, testcoin=False, unittest=False, headless=False):
@@ -17,7 +18,6 @@ def set_options (data_dir=None, bitcoind_rpc_connect=None, bitcoind_rpc_port=Non
     if unittest and not testnet:
         raise Exception # TODO
 
-    # Data directory
     if not data_dir:
         config.DATA_DIR = appdirs.user_data_dir(appauthor='Counterparty', appname='counterpartyd', roaming=True)
     else:
@@ -213,7 +213,7 @@ def set_options (data_dir=None, bitcoind_rpc_connect=None, bitcoind_rpc_port=Non
         config.GUI_PASSWORD = config.RPC_PASSWORD
 
     config.GUI_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'counterpartygui')
-    return config
+    return configfile
 
 
 def connect_to_db(timeout=1000):
@@ -239,12 +239,6 @@ def init_logging():
     logger.addHandler(console)
 
 
-def check_auth(user, passwd):
-    if user==config.GUI_USER and passwd==config.GUI_PASSWORD:
-        return True
-    return False
-
-
 def S(value):
     return int(D(value)*config.UNIT)
 
@@ -254,4 +248,9 @@ class DecimalEncoder(json.JSONEncoder):
         if isinstance(o,  decimal.Decimal):
             return str(o)
         return super(DecimalEncoder, self).default(o)
+
+def check_auth(user, passwd):
+    if user==config.GUI_USER and passwd==config.GUI_PASSWORD:
+        return True
+    return False
 
