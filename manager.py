@@ -5,6 +5,8 @@ import logging
 from tkinter import *
 from tkinter import messagebox
 import webbrowser
+from helpers import set_options
+from counterpartyd.lib import config
 
 def non_block_read(output):
     fd = output.fileno()
@@ -26,7 +28,7 @@ class TextWidgetOut(object):
     def write(self, txt):
         clean_txt = TextWidgetOut.clean_out(txt)
         if clean_txt is not None:
-            
+
             if self.buffer!="":
                 self.text_widget.delete("1.0", END)
 
@@ -55,6 +57,9 @@ class TextWidgetOut(object):
 class XCPManager(Tk):
     def __init__(self):
         Tk.__init__(self)
+
+        set_options()
+
         self.title("Counterparty Wallet Manager")
         self.protocol("WM_DELETE_WINDOW", self.ask_quit) 
 
@@ -98,7 +103,7 @@ class XCPManager(Tk):
         self.after(500, self.update_logs)
 
     def open_wallet(self):
-        webbrowser.open_new("http://ouziel:toto11@localhost:8080/")
+        webbrowser.open_new("http://"+config.GUI_USER+":"+config.GUI_PASSWORD+"@"+config.GUI_HOST+":"+config.GUI_PORT+"/")
 
 
     def ask_quit(self):
@@ -108,15 +113,10 @@ class XCPManager(Tk):
 
 
 
-root = XCPManager() 
-
-
-
-
-
-
-
-root.mainloop()
+if __name__ == '__main__':
+    
+    root = XCPManager() 
+    root.mainloop()
 
 
 

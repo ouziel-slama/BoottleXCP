@@ -1,16 +1,7 @@
 #! /usr/bin/env python3
 
-
-
-
-from counterpartyd.lib import (config, api, util, exceptions, bitcoin, blocks)
-from counterpartyd.lib import (send, order, btcpay, issuance, broadcast, bet, dividend, burn, cancel, callback)
-
+from counterpartyd.lib import blocks
 from helpers import set_options, init_logging, connect_to_db
-
-
-
-
 
 
 if __name__ == '__main__':

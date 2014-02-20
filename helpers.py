@@ -213,6 +213,7 @@ def set_options (data_dir=None, bitcoind_rpc_connect=None, bitcoind_rpc_port=Non
         config.GUI_PASSWORD = config.RPC_PASSWORD
 
     config.GUI_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'counterpartygui')
+    return config
 
 
 def connect_to_db(timeout=1000):
