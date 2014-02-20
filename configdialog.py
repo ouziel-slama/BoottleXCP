@@ -58,10 +58,7 @@ class ConfigDialog(Toplevel):
             for key in fields_list:
                 Label(master, text=key+":").grid(row=row, sticky=W)
                 self.config_vars[key] = StringVar()
-                if key in self.configfile[self.configsection]:
-                    self.config_vars[key].set(self.configfile[self.configsection][key])
-                else:
-                    self.config_vars[key].set(self.defaultvalues[key])
+                self.config_vars[key].set(self.defaultvalues[key])
                 inputfield = Entry(master, textvariable=self.config_vars[key])
                 inputfield.grid(row=row, column=1)
                 config_fields.append(inputfield)

@@ -134,6 +134,17 @@ def set_options (data_dir=None, bitcoind_rpc_connect=None, bitcoind_rpc_port=Non
     
     return configfile
 
+def check_config():
+    ok = config.GUI_HOST!=''
+    ok = ok and config.GUI_PORT!=''
+    ok = ok and config.GUI_USER!=''
+    ok = ok and config.GUI_PASSWORD!=''
+    ok = ok and config.BITCOIND_RPC_CONNECT!=''
+    ok = ok and config.BITCOIND_RPC_PORT!=''
+    ok = ok and config.BITCOIND_RPC_USER!=''
+    ok = ok and config.BITCOIND_RPC_PASSWORD!=''
+    return ok
+
 
 def connect_to_db(timeout=1000):
     """Connects to the SQLite database, returning a db Connection object"""

@@ -5,7 +5,7 @@ import logging
 from tkinter import *
 from tkinter import messagebox
 import webbrowser
-from helpers import set_options
+from helpers import set_options, check_config
 from counterpartyd.lib import config
 from configdialog import ConfigDialog
 
@@ -109,14 +109,19 @@ class XCPManager(Tk):
         self.ws_subprocess = None
         self.xcpd_subprocess = None
 
-    def start_party(self):       
-        if self.ws_subprocess is None:
-            print(b"Webserver starting...\n")
-            self.ws_subprocess = subprocess.Popen("./counterpartyws.py", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if self.xcpd_subprocess is None:
-            print(b"Following blocks starting...\n")
-            self.xcpd_subprocess = subprocess.Popen("./followblocks.py", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        self.party_started = True
+
+    def start_party(self):     
+        if (not check_config()):
+            self.open_config()  
+        else:
+            if self.ws_subprocess is None:
+                print(b"Webserver starting...\n")
+                self.ws_subprocess = subprocess.Popen("./counterpartyws.py", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if self.xcpd_subprocess is None:
+                print(b"Following blocks starting...\n")
+                self.xcpd_subprocess = subprocess.Popen("./followblocks.py", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.party_started = True
+            self.switch_button.config(text='STOP PARTY!')
 
 
     def update_logs(self):
@@ -141,14 +146,14 @@ class XCPManager(Tk):
             self.xcpd_subprocess.kill()
             self.xcpd_subprocess = None
         self.party_started = False
+        self.switch_button.config(text='START PARTY!')
 
     def switch_party(self):
         if self.party_started:
             self.stop_party()
-            self.switch_button.config(text='START PARTY!')
         else:
             self.start_party()
-            self.switch_button.config(text='STOP PARTY!')
+            
 
     def quit(self):
         self.stop_party()
@@ -158,10 +163,10 @@ class XCPManager(Tk):
         config_dialog = ConfigDialog(self, title="Configuration", configfile=self.configfile, 
                                     defaultvalues=self.defaultvalues, allkeys=self.allkeys, configpath=self.configpath)
         if config_dialog.changed:
-            print(b"Configuration has changed.\n")
+            self.configfile = set_options()
+            print(b"Configuration saved.\n")
             if self.party_started:
-                print(b"Restarting Party!\n")
-                self.configfile = set_options()
+                print(b"Restarting Party!\n")       
                 self.stop_party()
                 self.start_party()
         else:
