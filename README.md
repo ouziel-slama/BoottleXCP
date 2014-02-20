@@ -27,20 +27,15 @@ bower install
 
 cd ..
 
-cd counterpartyd
-screen -S counterpartyd
-./counterpartyd server
-ctrl + a + d
-
-cd ..
-
-screen -S counterpartyws
-./counterpartyws
-ctrl + a + d
+python3 manager.py
 
 </pre>
 
-Open you browser: http://localhost:8080
+* "START PARTY!" to start blocks following and web server.
+* "OPEN WALLET" top open the GUI
+* "QUIT" to stop blocks following and web server and close manager
+
+![ScreenShot](http://i.imgur.com/rYg3ONc.png)
 
 # Configuration file
 
