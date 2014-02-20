@@ -69,18 +69,12 @@ class XCPManager(Tk):
             "bitcoind-rpc-connect": config.BITCOIND_RPC_CONNECT,
             "bitcoind-rpc-port": config.BITCOIND_RPC_PORT,
             "bitcoind-rpc-user": config.BITCOIND_RPC_USER,
-            "bitcoind-rpc-password": config.BITCOIND_RPC_PASSWORD,
-
-            "rpc-host": config.RPC_HOST,
-            "rpc-port": config.RPC_PORT,
-            "rpc-user": config.RPC_USER,
-            "rpc-password": config.RPC_PASSWORD
+            "bitcoind-rpc-password": config.BITCOIND_RPC_PASSWORD
         }
 
         self.allkeys = [
             "gui-host", "gui-port", "gui-user", "gui-password", 
-            "bitcoind-rpc-connect", "bitcoind-rpc-port", "bitcoind-rpc-user", "bitcoind-rpc-password", 
-            "rpc-host", "rpc-port", "rpc-user", "rpc-password"
+            "bitcoind-rpc-connect", "bitcoind-rpc-port", "bitcoind-rpc-user", "bitcoind-rpc-password"
         ]
         self.configpath = os.path.join(config.DATA_DIR, 'counterpartyd.conf')       
 
@@ -135,7 +129,7 @@ class XCPManager(Tk):
         self.after(500, self.update_logs)
 
     def open_wallet(self):
-        webbrowser.open_new("http://"+config.GUI_USER+":"+config.GUI_PASSWORD+"@"+config.GUI_HOST+":"+config.GUI_PORT+"/")
+        webbrowser.open_new(config.GUI_HOME)
 
     def stop_party(self):
         if self.ws_subprocess is not None:
