@@ -3,12 +3,10 @@ counterpartyws
 
 A simple webserver + HTML GUI for Counterparty
 
-You can find MacOS build here: https://github.com/JahPowerBit/counterpartyws_build
-
 # Requirement
 
 * you must have bitcoind running with txindex=1 and server=1 in config file. 
-* you must have counterpatyd --server running (if you want the transactions database is updated continuously)
+
 
 # Quick install and run 
 <b>(thanks to romerun)</b>
@@ -27,18 +25,22 @@ bower install
 
 cd ..
 
-python3 manager.py
+python3 boottlexcp.py
 
 </pre>
 
 * "START PARTY!" to start blocks following and web server.
 * "OPEN WALLET" top open the GUI
 * "QUIT" to stop blocks following and web server and close manager
+* "CONFIG" to change configuration
 
-![ScreenShot](http://i.imgur.com/rYg3ONc.png)
+![ScreenShot](http://i.imgur.com/hcqWHnL.png)
+
+![ScreenShot](http://i.imgur.com/t9loYX3.png)
+
+![ScreenShot](http://i.imgur.com/5AhiSdO.png)
 
 # Configuration file
-
 
 OS  | Path
 ------------- | -------------

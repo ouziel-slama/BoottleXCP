@@ -134,7 +134,14 @@ class XCPManager(Tk):
         self.after(500, self.update_logs)
 
     def open_wallet(self):
-        webbrowser.open_new(config.GUI_HOME)
+
+        if self.party_started:
+            webbrowser.open_new(config.GUI_HOME)
+        else:
+            messagebox.showwarning(
+                "Oops!",
+                "you did not start the party!"
+            )
 
     def stop_party(self):
         if self.ws_subprocess is not None:
