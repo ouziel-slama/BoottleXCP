@@ -1,4 +1,3 @@
-import fcntl
 import os
 import subprocess, codecs
 import logging
@@ -8,52 +7,32 @@ import webbrowser
 from helpers import set_options, check_config
 from counterpartyd.lib import config
 from configdialog import ConfigDialog
+from threading  import Thread
 
-def non_block_read(output):
-    fd = output.fileno()
-    fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-    fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+
+def forward_stream(proc, stream_in, stream_out):
     try:
-        return output.read()
-    except:
-        return ""
-
+        for line in iter(stream_in.readline, b''):
+            if proc.poll() is None:
+                stream_out.write(line.decode(encoding='UTF-8'))
+            else:
+                thread.exit()
+    except Exception as e:
+        thread.exit()
+        
 
 class TextWidgetOut(object):
     def __init__(self, text_widget, stream):
         self.text_widget = text_widget
         self.stream = stream
-        self.buffer = "";
-        self.buffer_size = 150
 
     def write(self, txt):
-        clean_txt = TextWidgetOut.clean_out(txt)
-        if clean_txt is not None:
-
-            if self.buffer!="":
-                self.text_widget.delete("1.0", END)
-
-            self.buffer += clean_txt           
-            if len(self.buffer.split("\n"))>self.buffer_size:
-                self.buffer = "\n".join(self.buffer.split("\n")[-self.buffer_size:]) 
-
-            self.text_widget.insert(END, self.buffer)
-            self.text_widget.see('end')
-
-    @staticmethod
-    def clean_out(txt):
-        if txt is not None and txt!="b''" and txt!='' and txt!="\n" and txt!="None":
-            if txt[:2]=="b'":
-                clean_txt = txt[2:-1]
-                clean_txt = clean_txt.replace('\\n', "\n")
-            return clean_txt
-        else:
-            return None
+        self.text_widget.insert(END, txt)
+        self.text_widget.see('end')
 
     def __getattr__(self, attr):
        return getattr(self.stream, attr)
 
-    
 
 class XCPManager(Tk):
     def __init__(self):
@@ -98,16 +77,16 @@ class XCPManager(Tk):
 
         menu.pack(fill=X, padx=15, pady=5)
 
-        text_widget = Text(self, borderwidth=2, relief=GROOVE, highlightcolor="white")
+        self.text_widget = Text(self, borderwidth=2, relief=GROOVE, highlightcolor="white")
         
-        text_widget.pack(fill=BOTH, expand=1, padx=15, pady=5)
+        self.text_widget.pack(fill=BOTH, expand=1, padx=15, pady=5)
 
-        sys.stdout = TextWidgetOut(text_widget, sys.stdout)
-        sys.stderr = TextWidgetOut(text_widget, sys.stderr)
+        sys.stdout = TextWidgetOut(self.text_widget, sys.stdout)
+        sys.stderr = TextWidgetOut(self.text_widget, sys.stderr)
 
-        self.after(500, self.update_logs)
         self.ws_subprocess = None
         self.xcpd_subprocess = None
+        self.logthread = []
 
 
     def start_party(self):     
@@ -115,26 +94,32 @@ class XCPManager(Tk):
             self.open_config()  
         else:
             if self.ws_subprocess is None:
-                print(b"Webserver starting...\n")
+                print("Webserver starting...")
                 self.ws_subprocess = subprocess.Popen("./counterpartyws.py", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if self.xcpd_subprocess is None:
-                print(b"Following blocks starting...\n")
+                print("Following blocks starting...")
                 self.xcpd_subprocess = subprocess.Popen("./followblocks.py", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                        
             self.party_started = True
             self.switch_button.config(text='STOP PARTY!')
+            self.watch_logs()
 
 
-    def update_logs(self):
-        if self.ws_subprocess is not None:
-            print(non_block_read(self.ws_subprocess.stdout))
-            print(non_block_read(self.ws_subprocess.stderr))
-        if self.xcpd_subprocess is not None:
-            print(non_block_read(self.xcpd_subprocess.stdout))
-            print(non_block_read(self.xcpd_subprocess.stderr))       
-        self.after(500, self.update_logs)
+    def watch_stream(self, proc, stream):
+        thr = Thread(target=forward_stream, args=(proc, stream, sys.stdout))
+        thr.daemon = True # thread dies with the program
+        thr.start()
+        self.logthread.append(thr)
+
+
+    def watch_logs(self):       
+        procs = [self.xcpd_subprocess, self.ws_subprocess]
+        for proc in procs:
+            self.watch_stream(proc, proc.stdout)
+            self.watch_stream(proc, proc.stderr)
+
 
     def open_wallet(self):
-
         if self.party_started:
             webbrowser.open_new(config.GUI_HOME)
         else:
@@ -145,11 +130,11 @@ class XCPManager(Tk):
 
     def stop_party(self):
         if self.ws_subprocess is not None:
-            print(b"Webserver stopping..\n")
+            print("Webserver stopping..")
             self.ws_subprocess.kill()
             self.ws_subprocess = None
         if self.xcpd_subprocess is not None:
-            print(b"Following blocks stopping..\n")
+            print("Following blocks stopping..")
             self.xcpd_subprocess.kill()
             self.xcpd_subprocess = None
         self.party_started = False
@@ -171,13 +156,13 @@ class XCPManager(Tk):
                                     defaultvalues=self.defaultvalues, allkeys=self.allkeys, configpath=self.configpath)
         if config_dialog.changed:
             self.configfile = set_options()
-            print(b"Configuration saved.\n")
+            print("Configuration saved.")
             if self.party_started:
-                print(b"Restarting Party!\n")       
+                print("Restarting Party!")       
                 self.stop_party()
                 self.start_party()
         else:
-            print(b"Configuration does not changed.\n")
+            print("Configuration does not changed.")
 
 if __name__ == '__main__':
     
