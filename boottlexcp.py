@@ -8,7 +8,7 @@ from helpers import set_options, check_config
 from counterpartyd.lib import config
 from configdialog import ConfigDialog
 from threading  import Thread
-#import _thread
+import _thread
 
 def forward_stream(proc, stream_in, stream_out):
     try:
@@ -16,11 +16,9 @@ def forward_stream(proc, stream_in, stream_out):
             if proc.poll() is None:
                 stream_out.write(line.decode(encoding='UTF-8'))
             else:
-                #_thread.exit()
-                pass
+                _thread.exit()
     except Exception as e:
-        #_thread.exit()
-        pass
+        _thread.exit()
         
 
 class TextWidgetOut(object):
