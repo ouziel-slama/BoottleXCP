@@ -5,7 +5,7 @@ import configparser
 import appdirs
 import decimal
 import apsw
-from counterpartyd.lib import config, util
+from counterpartyd.lib import config, util, bitcoin
 
 D = decimal.Decimal
 
@@ -183,4 +183,46 @@ def check_auth(user, passwd):
     if user==config.GUI_USER and passwd==config.GUI_PASSWORD:
         return True
     return False
+
+def check_bitcoind_for_tx(address, passphrase):
+    headers = {'content-type': 'application/json'}
+    payload = {
+        "method": "dumpprivkey",
+        "params": [address],
+        "jsonrpc": "2.0",
+        "id": 0,
+    }
+    response = bitcoin.connect(config.BITCOIND_RPC, payload, headers) #TODO: replace by a non blocking connect (no retry)
+
+    if response == None:
+        return {'success':False, 'code':-1, 'message':'Cannot communicate with Bitcoind.'}
+
+    if response.status_code not in (200, 500):
+        return {'success':False, 'code':-2, 'message':str(response.status_code) + ' ' + response.reason}
+
+    response_json = response.json()
+
+    if 'error' not in response_json.keys() or response_json['error'] == None:
+        return {'success':True, 'code':1, 'message':'Bitcoind ready'}
+    elif response_json['error']['code'] == -5:   # RPC_INVALID_ADDRESS_OR_KEY
+        return {'success':False, 'code':-3, 'message':'Is txindex enabled in Bitcoind?'}
+    elif not config.HEADLESS and response_json['error']['code'] == -4:   # Unknown private key (locked wallet?)
+        if bitcoin.rpc('validateaddress', [address])['ismine']:
+            if passphrase is not None:
+                payload['method'] = 'walletpassphrase'
+                payload['params'] = [passphrase, 60]
+                passhprase_response = bitcoin.connect(config.BITCOIND_RPC, payload, headers)
+                passhprase_response_json = passhprase_response.json()
+                if 'error' not in passhprase_response_json.keys() or passhprase_response_json['error'] == None:
+                    return {'success':True, 'code':1, 'message':'Bitcoind ready'}
+                else:
+                    return {'success':False, 'code':-7, 'message':'Invalid passhrase'}
+            else:
+                return {'success':False, 'code':-4, 'message':'Need passhrase'}
+        else: 
+            return {'success':False, 'code':-5, 'message':'Source address not in wallet.'} 
+    else:
+        return {'success':False, 'code':-6, 'message':response_json['error']} 
+
+
 

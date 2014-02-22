@@ -10,10 +10,10 @@ import logging
 import bottle
 from bottle import route, run, template, Bottle, request, static_file, redirect, error, hook, response, abort, auth_basic
 
-from counterpartyd.lib import (config, api, util, exceptions, bitcoin, blocks)
+from counterpartyd.lib import (config, util, exceptions, bitcoin)
 from counterpartyd.lib import (send, order, btcpay, issuance, broadcast, bet, dividend, burn, cancel, callback)
 
-from helpers import set_options, init_logging, D, S, DecimalEncoder, connect_to_db, check_auth
+from helpers import set_options, init_logging, D, S, DecimalEncoder, connect_to_db, check_auth, check_bitcoind_for_tx
 
 
 app = Bottle()
@@ -72,10 +72,38 @@ def counterparty_action():
 
     unsigned = True if request.forms.get('unsigned')!=None and request.forms.get('unsigned')=="1" else False
     try:
+        print("1")
         action = request.forms.get('action')
+        source = request.forms.get('source')
+        passphrase = request.forms.get('passphrase')
+        if passphrase=='':
+            passphrase = None
+       
+
+        check_address = None
+        if source:
+            check_address = source
+        elif action=="cancel":
+            offer_hash = request.forms.get('offer_hash') 
+            check_address, offer, problems = cancel.validate(db, offer_hash)
+        elif action=="btcpay":
+            order_match_id = request.forms.get('order_match_id')
+            order_match, problems = btcpay.validate(db, order_match_id)
+            if len(problems)==0: 
+                if order_match['backward_asset'] == 'BTC':
+                    check_address = order_match['tx1_address']
+                else:
+                    check_address = order_match['tx0_address']
+        if check_address is None:
+            raise Exception("Invalid check address")
+        else:
+            print("3")
+            check = check_bitcoind_for_tx(check_address, passphrase)
+            if check['success']==False:
+                raise Exception(check['message'])
 
         if action=='send':
-            source = request.forms.get('source')
+            print(source)
             destination = request.forms.get('destination')
             asset = request.forms.get('asset')  
             quantity = util.devise(db, request.forms.get('quantity'), asset, 'input')      
@@ -83,7 +111,6 @@ def counterparty_action():
             result = {'success':True, 'message':str(unsigned_tx_hex)}       
 
         elif action=='order':
-            source = request.forms.get('source')
             give_asset = request.forms.get('give_asset')
             get_asset = request.forms.get('get_asset')
             give_quantity = util.devise(db, request.forms.get('give_quantity'), give_asset, 'input')
@@ -107,17 +134,15 @@ def counterparty_action():
             result = {'success':True, 'message':str(unsigned_tx_hex)}       
 
         elif action=='btcpay':
-            order_match_id = request.forms.get('order_match_id')         
+            
             unsigned_tx_hex = btcpay.create(db, order_match_id, unsigned=unsigned)
             result = {'success':True, 'message':str(unsigned_tx_hex)}          
 
-        elif action=='cancel':
-            offer_hash = request.forms.get('offer_hash')           
+        elif action=='cancel':                     
             unsigned_tx_hex = cancel.create(db, offer_hash, unsigned=unsigned)
             result = {'success':True, 'message':str(unsigned_tx_hex)}
 
         elif action=='issuance':
-            source = request.forms.get('source')
             destination = request.forms.get('destination')
             asset_name = request.forms.get('asset_name')
             divisible = True if request.forms.get('divisible')=="1" else False
@@ -139,7 +164,6 @@ def counterparty_action():
             result = {'success':True, 'message':str(unsigned_tx_hex)}
         
         elif action=='dividend':
-            source = request.forms.get('source')
             asset = request.forms.get('asset') 
             quantity_per_share = util.devise(db, request.forms.get('quantity_per_share'), 'XCP', 'input')
             unsigned_tx_hex = dividend.create(db, source, quantity_per_share, asset, unsigned=unsigned)
@@ -153,7 +177,6 @@ def counterparty_action():
             result = {'success':True, 'message':str(unsigned_tx_hex)}
 
         elif action=='broadcast':
-            source = request.forms.get('source')
             text = request.forms.get('text')
             value = util.devise(db, request.forms.get('value'), 'value', 'input')
             fee_multiplier = request.forms.get('fee_multiplier')
@@ -161,7 +184,6 @@ def counterparty_action():
             result = {'success':True, 'message':str(unsigned_tx_hex)}
 
         elif action=='bet':
-            source = request.forms.get('source')
             feed_address = request.forms.get('feed_address')
             bet_type = int(request.forms.get('bet_type'))
             deadline = calendar.timegm(dateutil.parser.parse(request.forms.get('deadline')).utctimetuple())
@@ -191,14 +213,10 @@ def counterparty_action():
 
 
 def run_server():
-    print('_', config.GUI_USER, '_', config.GUI_PASSWORD, '_')
-    app.run(port=config.GUI_PORT, host=config.GUI_HOST, reloader=False)
+    app.run(port=config.GUI_PORT, host=config.GUI_HOST)
 
 
 if __name__ == '__main__':
-    print("run server")
-    
-
     run_server()
 
 

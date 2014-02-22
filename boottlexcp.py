@@ -8,7 +8,7 @@ from helpers import set_options, check_config
 from counterpartyd.lib import config
 from configdialog import ConfigDialog
 from threading  import Thread
-
+#import _thread
 
 def forward_stream(proc, stream_in, stream_out):
     try:
@@ -16,9 +16,11 @@ def forward_stream(proc, stream_in, stream_out):
             if proc.poll() is None:
                 stream_out.write(line.decode(encoding='UTF-8'))
             else:
-                thread.exit()
+                #_thread.exit()
+                pass
     except Exception as e:
-        thread.exit()
+        #_thread.exit()
+        pass
         
 
 class TextWidgetOut(object):
@@ -88,6 +90,10 @@ class XCPManager(Tk):
         self.xcpd_subprocess = None
         self.logthread = []
 
+        self.python_path = "python"; #TODO: find another way to know i we are in .app
+        if 'Contents/Resources/' in os.path.abspath(os.path.dirname(__file__)):
+            self.python_path = "../MacOS/python"
+
 
     def start_party(self):     
         if (not check_config()):
@@ -95,10 +101,16 @@ class XCPManager(Tk):
         else:
             if self.ws_subprocess is None:
                 print("Webserver starting...")
-                self.ws_subprocess = subprocess.Popen("./counterpartyws.py", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                try:
+                    self.ws_subprocess = subprocess.Popen([self.python_path, 'counterpartyws.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+                except Exception as e:
+                    print(e)
             if self.xcpd_subprocess is None:
                 print("Following blocks starting...")
-                self.xcpd_subprocess = subprocess.Popen("./followblocks.py", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                try:
+                    self.xcpd_subprocess = subprocess.Popen([self.python_path, 'followblocks.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+                except Exception as e:
+                    print(e)
                         
             self.party_started = True
             self.switch_button.config(text='STOP PARTY!')
@@ -115,8 +127,9 @@ class XCPManager(Tk):
     def watch_logs(self):       
         procs = [self.xcpd_subprocess, self.ws_subprocess]
         for proc in procs:
-            self.watch_stream(proc, proc.stdout)
-            self.watch_stream(proc, proc.stderr)
+            if proc is not None:
+                self.watch_stream(proc, proc.stdout)
+                self.watch_stream(proc, proc.stderr)
 
 
     def open_wallet(self):
@@ -131,11 +144,17 @@ class XCPManager(Tk):
     def stop_party(self):
         if self.ws_subprocess is not None:
             print("Webserver stopping..")
-            self.ws_subprocess.kill()
+            try:
+                self.ws_subprocess.kill()
+            except Exception as e:
+                print(e)
             self.ws_subprocess = None
         if self.xcpd_subprocess is not None:
             print("Following blocks stopping..")
-            self.xcpd_subprocess.kill()
+            try:
+                self.xcpd_subprocess.kill()
+            except Exception as e:
+                print(e)
             self.xcpd_subprocess = None
         self.party_started = False
         self.switch_button.config(text='START PARTY!')
