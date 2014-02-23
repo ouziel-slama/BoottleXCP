@@ -7,8 +7,12 @@ import decimal
 import apsw
 from counterpartyd.lib import config, util, bitcoin
 
-D = decimal.Decimal
 
+def D(num):
+    try:
+        return decimal.Decimal(num)
+    except:
+        return decimal.Decimal(0) 
 
 def set_options (data_dir=None, bitcoind_rpc_connect=None, bitcoind_rpc_port=None,
                  bitcoind_rpc_user=None, bitcoind_rpc_password=None, rpc_host=None, rpc_port=None,
@@ -130,6 +134,7 @@ def set_options (data_dir=None, bitcoind_rpc_connect=None, bitcoind_rpc_port=Non
 
     # Headless operation
     config.HEADLESS = headless
+    config.TESTNET = False
 
     
     return configfile
@@ -184,45 +189,29 @@ def check_auth(user, passwd):
         return True
     return False
 
-def check_bitcoind_for_tx(address, passphrase):
-    headers = {'content-type': 'application/json'}
-    payload = {
-        "method": "dumpprivkey",
-        "params": [address],
-        "jsonrpc": "2.0",
-        "id": 0,
-    }
-    response = bitcoin.connect(config.BITCOIND_RPC, payload, headers) #TODO: replace by a non blocking connect (no retry)
+def wallet_unlock(passphrase=None):
+    success_response = {'success':True, 'message':'Wallet unlocked'}
 
-    if response == None:
-        return {'success':False, 'code':-1, 'message':'Cannot communicate with Bitcoind.'}
-
-    if response.status_code not in (200, 500):
-        return {'success':False, 'code':-2, 'message':str(response.status_code) + ' ' + response.reason}
-
-    response_json = response.json()
-
-    if 'error' not in response_json.keys() or response_json['error'] == None:
-        return {'success':True, 'code':1, 'message':'Bitcoind ready'}
-    elif response_json['error']['code'] == -5:   # RPC_INVALID_ADDRESS_OR_KEY
-        return {'success':False, 'code':-3, 'message':'Is txindex enabled in Bitcoind?'}
-    elif not config.HEADLESS and response_json['error']['code'] == -4:   # Unknown private key (locked wallet?)
-        if bitcoin.rpc('validateaddress', [address])['ismine']:
-            if passphrase is not None:
-                payload['method'] = 'walletpassphrase'
-                payload['params'] = [passphrase, 60]
-                passhprase_response = bitcoin.connect(config.BITCOIND_RPC, payload, headers)
-                passhprase_response_json = passhprase_response.json()
-                if 'error' not in passhprase_response_json.keys() or passhprase_response_json['error'] == None:
-                    return {'success':True, 'code':1, 'message':'Bitcoind ready'}
-                else:
-                    return {'success':False, 'code':-7, 'message':'Invalid passhrase'}
-            else:
-                return {'success':False, 'code':-4, 'message':'Need passhrase'}
-        else: 
-            return {'success':False, 'code':-5, 'message':'Source address not in wallet.'} 
+    getinfo = bitcoin.rpc('getinfo', [])
+    if 'unlocked_until' not in getinfo:
+        return success_response
+    elif getinfo['unlocked_until'] > 0:
+        return success_response
     else:
-        return {'success':False, 'code':-6, 'message':response_json['error']} 
-
-
+        if passphrase is not None:
+            headers = {'content-type': 'application/json'}
+            payload = {
+                "method": "walletpassphrase",
+                "params": [passphrase, 60],
+                "jsonrpc": "2.0",
+                "id": 0,
+            }
+            passhprase_response = bitcoin.connect(config.BITCOIND_RPC, payload, headers)
+            passhprase_response_json = passhprase_response.json()
+            if 'error' not in passhprase_response_json.keys() or passhprase_response_json['error'] == None:
+                return success_response
+            else:
+                return {'success':False, 'message':'Invalid passhrase'}
+        else:
+            return {'success':False, 'message':'Wallet locked. Type your passphrase'}
 
