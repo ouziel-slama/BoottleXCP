@@ -223,7 +223,7 @@ def counterparty_action():
             result = {'success':False, 'message':'Unknown action.'} 
 
         if result['success']==True and unsigned==False:
-            tx_hash = bitcoin.transmit(unsigned_tx_hex, ask=False);
+            tx_hash = bitcoin.transmit(unsigned_tx_hex);
             result['message'] = "Transaction transmited: "+tx_hash
 
     except Exception as e:
