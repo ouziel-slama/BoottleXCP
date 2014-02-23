@@ -20,11 +20,6 @@ pip3 install https://github.com/rogerbinns/apsw/archive/master.zip
 
 git clone --recursive https://github.com/JahPowerBit/BoottleXCP.git
 
-cd BoottleXCP/counterpartygui
-bower install
-
-cd ..
-
 python3 boottlexcp.py
 
 </pre>
