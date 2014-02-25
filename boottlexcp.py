@@ -179,7 +179,7 @@ class XCPManager(Tk):
                 self.stop_party()
                 self.start_party()
         else:
-            print("Configuration does not changed.")
+            print("Configuration has not changed.")
 
 if __name__ == '__main__':
     
