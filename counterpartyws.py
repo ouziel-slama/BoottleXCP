@@ -123,8 +123,8 @@ def counterparty_action():
                 fee_required = 0
                 fee_provided = config.MIN_FEE
 
-            give_quantity = util.devise(db, give_quantity, give_asset, 'input')
-            get_quantity = util.devise(db, get_quantity, get_asset, 'input') 
+            give_quantity = util.devise(db, D(give_quantity), give_asset, 'input')
+            get_quantity = util.devise(db, D(get_quantity), get_asset, 'input') 
             tx_info = order.compose(db, source, give_asset,
                                     give_quantity, get_asset,
                                     get_quantity, expiration,
