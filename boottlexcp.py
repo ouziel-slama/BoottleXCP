@@ -27,7 +27,7 @@ class TextWidgetOut(object):
         self.stream = stream
 
     def write(self, txt):
-        self.text_widget.insert(END, txt)
+        self.text_widget.insert(END, txt.rstrip()+'\n')
         self.text_widget.see('end')
 
     def __getattr__(self, attr):
